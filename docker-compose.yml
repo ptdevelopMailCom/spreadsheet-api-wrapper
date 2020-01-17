@@ -1,0 +1,11 @@
+version: "3"
+services:
+  spreadsheet-service:
+    build: ./spreadsheet-api
+    ports:
+      - 10001:10001
+    environment: 
+      - PORT=10001
+      - TZ=Asia/Hong_Kong
+    volumes: 
+      - "./spreadsheet-api:/opt/app"
