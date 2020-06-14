@@ -4,8 +4,20 @@ services:
     build: ./spreadsheet-api
     ports:
       - 10001:10001
+    depends_on: 
+      - spreadsheet-service-db
     environment: 
       - PORT=10001
       - TZ=Asia/Hong_Kong
     volumes: 
       - "./spreadsheet-api:/opt/app"
+
+  spreadsheet-service-db:
+    image: hypriot/rpi-mysql:latest
+    environment: 
+      - MYSQL_ROOT_PASSWORD=superpassword
+      - MYSQL_DATABASE=stock_db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    ports:
+      - 10101:3306
