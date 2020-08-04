@@ -1,14 +1,15 @@
-const fs = require('fs');
-const readline = require('readline');
-const path = require('path');
-const util = require('util');
-const { google } = require('googleapis');
+import * as fs from 'fs';
+import * as readline from 'readline';
+import * as path from 'path';
+import * as util from 'util';
+import { google } from 'googleapis';
+import { OAuth2Client } from 'google-auth-library';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
 const TOKEN_PATH = path.resolve(__dirname, 'token.json');
 
-function authorize(credentials) {
+function authorize(credentials): Promise<OAuth2Client> {
     return new Promise((resolve, reject) => {
         const { client_secret, client_id, redirect_uris } = credentials.installed;
         const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
@@ -19,13 +20,13 @@ function authorize(credentials) {
                 console.error(err);
                 return getNewToken(oAuth2Client);
             }
-            oAuth2Client.setCredentials(JSON.parse(token));
+            oAuth2Client.setCredentials(JSON.parse(token.toString()));
             resolve(oAuth2Client);
         });
     });
 }
 
-function getNewToken(oAuth2Client, callback) {
+function getNewToken(oAuth2Client: OAuth2Client, callback?: Function): Promise<OAuth2Client> {
     return new Promise((resolve, reject) => {
         const authUrl = oAuth2Client.generateAuthUrl({
             access_type: 'offline',
@@ -82,16 +83,20 @@ function listMajors(auth) {
     });
 }
 
-module.exports = {
-    perform: async () => {
+export namespace AuthHelper {
+    
+    export async function perform() {
         const readFile = util.promisify(fs.readFile);
         const CRED_PATH = path.resolve(__dirname, 'credentials.json');
         return readFile(CRED_PATH)
-            .then(content => authorize(JSON.parse(content)))
+            .then(content => authorize(JSON.parse(content.toString())))
             .catch(err => {
                 console.log('Error loading client secret file:', err);
                 return Promise.reject(err);
             });
-    },
-    listMajors
+    }
+
+    export function list(auth) {
+        listMajors(auth);
+    }
 }
